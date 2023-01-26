@@ -1,0 +1,3 @@
+[submodule "library/qdpy"]
+	path = library/qdpy
+	url = https://gitlab.com/leo.cazenille/qdpy.git
