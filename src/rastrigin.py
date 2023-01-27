@@ -32,8 +32,8 @@ def complex_rastrigin():
     parser = argparse.ArgumentParser()
     parser.add_argument('--seed', type=int, default=None, help="Numpy random seed")
     parser.add_argument('-p', '--parallelismType', type=str, default='concurrent', help = "Type of parallelism to use (none, concurrent, scoop)")
-    parser.add_argument('-c', '--configFile', type=str, default='/home/laurent/Documents/Polytech/MA2/Thesis/src/conf/rastrigin.yaml', help = "Path of the configuration file")
-    parser.add_argument('-o', '--outputDir', type=str, default='/home/laurent/Documents/Polytech/MA2/Thesis/out§', help = "Path of the output log files")
+    parser.add_argument('-c', '--configFile', type=str, default='/home/laurent/Documents/Polytech/MA2/thesis/src/conf/rastrigin.yaml', help = "Path of the configuration file")
+    parser.add_argument('-o', '--outputDir', type=str, default='/home/laurent/Documents/Polytech/MA2/thesis/out', help = "Path of the output log files")
     args = parser.parse_args()
 
 
