@@ -4,6 +4,8 @@ from qdpy.base import ParallelismManager
 import os,math
 import numpy as np
 import matplotlib.pyplot as plt
+from functools import partial
+
 
 plot_path = os.path.join("out/")
 
@@ -16,6 +18,7 @@ def eval_fn(ind):
     score = 1. - sum(( math.cos(k * ind[i]) * math.exp(-(ind[i]*ind[i])/2.) for i in range(len(ind)))) / float(len(ind))
     fit0 = sum((x * math.sin(abs(x) * 2. * math.pi) for x in ind)) / normalization
     fit1 = sum((x * math.cos(abs(x) * 2. * math.pi) for x in ind)) / normalization
+    features = list(ind[:])
     features = (fit0, fit1)
     return (score,), features
 
@@ -30,7 +33,7 @@ algo = algorithms.RandomSearchMutPolyBounded(grid, budget=30000, batch_size=500,
 # Create a logger to pretty-print everything and generate output data files
 logger = algorithms.AlgorithmLogger(algo,log_base_path=plot_path)
 
-
+fitness_fn = partial(eval_fn,n_dim)
 # Run illumination process !
 with ParallelismManager("none") as pMgr:
         best = algo.optimise(eval_fn, executor = pMgr.executor, batch_mode=False) # Disable batch_mode (steady-state mode) to ask/tell new individuals without waiting the completion of each batch
@@ -39,7 +42,7 @@ with ParallelismManager("none") as pMgr:
 print(algo.summary())
 
 # Plot the results
-plots.default_plots_grid(logger)
+# plots.default_plots_grid(logger)
 # Create plot of the performance grid
 plot_path = os.path.join("out/performancesGrid.pdf")
 plots.plotGridSubplots(grid.quality_array[... ,0], plot_path, plt.get_cmap("nipy_spectral_r"), grid.features_domain, grid.fitness_domain[0], nbTicks=None)
