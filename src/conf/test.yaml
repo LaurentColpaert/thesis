@@ -24,7 +24,7 @@ game:
   # env_name: 'BipedalWalkerHardcore-v2'
   input_size: 24
   output_size: 4
-  layers: [40, 40]
+  layers: [20, 20]
 #  time_factor: 0
 #  layers: [40, 40]
 #  activation: 'tanh'
@@ -52,8 +52,8 @@ algorithms:
 
     algoQD:
         type: RandomSearchMutPolyBounded
-        budget: 50 #000       # The total number of allowed evaluations for this algorithm
-        batch_size: 4 #50      # The number of evaluations in each subsequent batch
+        budget: 10 #000       # The total number of allowed evaluations for this algorithm
+        batch_size: 50 #50      # The number of evaluations in each subsequent batch
         sel_pb: 0.7         # The probability of performing selection+variation instead of initialising a new genome
         init_pb: 0.3        # The probability of initiating a new genome instead of performing selection
         mut_pb: 0.1         # The probability of mutating each value of the genome of a selected individual

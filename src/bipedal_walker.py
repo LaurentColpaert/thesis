@@ -37,7 +37,7 @@ class BipedalWalkerExperiment(QDExperiment):
 def parse_args():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--configFilename', type=str, default='src/conf/qdpedal.yaml', help = "Path of configuration file")
+    parser.add_argument('-c', '--configFilename', type=str, default='src/conf/test.yaml', help = "Path of configuration file")
     parser.add_argument('-o', '--resultsBaseDir', type=str, default='out/', help = "Path of results files")
     parser.add_argument('-p', '--parallelismType', type=str, default='concurrent', help = "Type of parallelism to use")
     parser.add_argument('--replayBestFrom', type=str, default='', help = "Path of results data file -- used to replay the best individual")
