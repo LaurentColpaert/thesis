@@ -1,7 +1,7 @@
 out/*
 other
-
-
+docs
+docs/*
 
 .DS_Store
 .huskyrc.json
