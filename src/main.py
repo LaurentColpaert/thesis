@@ -3,31 +3,22 @@ import random
 import numpy as np
 from map_elite import MAP_Elite
 
-RANGE = 20
+psfm = "--fsm-config --nstates 4 --s0 4 --att0 3.25 --n0 2 --n0x0 0 --c0x0 5 --p0x0 0.23 --n0x1 2 --c0x1 0 --p0x1 0.70 --s1 2 --n1 3 --n1x0 0 --c1x0 4 --w1x0 8.91 --p1x0 7 --n1x1 1 --c1x1 0 --p1x1 0.15 --n1x2 2 --c1x2 3 --w1x2 1.68 --p1x2 10 --s2 1 --n2 1 --n2x0 0 --c2x0 3 --w2x0 6.93 --p2x0 4 --s3 4 --att3 3.71 --n3 2 --n3x0 0 --c3x0 1 --p3x0 0.50 --n3x1 2 --c3x1 5 --p3x1 0.62"
 
-def rastrigin(ind, a=10.):
+def fitness(ind):
     """Rastrigin test function."""
-    n = float(len(ind))
-    return a * n + sum(x * x - a * cos(2. * pi * x) for x in ind),ind
+    pass
 
 def generate_random():
-    return [random.uniform(-RANGE,RANGE),random.uniform(-RANGE,RANGE)]
+    pass
 
 def mutate(ind):
-    return [clamp(ind[0] + random.uniform(-1,1),-RANGE,RANGE), clamp(ind[1] + random.uniform(-1,1),-RANGE,RANGE)]
-def mutate_test(ind):
-    return ind + np.random.normal(0, 0.1, len(ind))
+    pass
 
-def clamp(value, minimum, maximum):
-    return max(minimum, min(value, maximum))
 
+def run_argos():
+    """
+    [HOME]/AutoMoDe/bin/automode_main/automode_main -n -c [mission].argos [pfsm]
+    """
 if __name__ == '__main__':
-
-    map_elite = MAP_Elite(b_range=[[-RANGE,RANGE],[-RANGE,RANGE]],width=30,height=30,num_iterations=1000,batch_size=100)
-    map_elite.set_fitness(rastrigin)
-    map_elite.set_mutate(mutate)
-    map_elite.init_archive(10,generate=generate_random)
-    map_elite.map_elite()
-
-    map_elite.display_archive()
-    map_elite.display_progress()
+    print("hello")
