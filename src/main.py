@@ -16,8 +16,10 @@ def mutate(ind):
 
 
 if __name__ == '__main__':
-    sim = Simulation()
-    sim.run_simulation()
+    for i in range(1):
+        print("Iteration ",i)
+        sim = Simulation()
+        sim.run_simulation()
     
 
     

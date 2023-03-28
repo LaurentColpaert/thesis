@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "cstdlib": "cpp"
+    },
+    "python.formatting.provider": "black"
+}
