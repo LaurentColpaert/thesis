@@ -34,13 +34,30 @@ class Simulation():
         self.patches, self.obstacles = self.retrieve_patches()
         
     def read_file(self,filename: str = 'position.txt'):
+        """
+        Read the value of a file and retrieve all the line into a list
+
+        Args:
+            -filename (str): the name of the file 
+
+        Returns:
+            -None
+        """
         with open(f"/home/laurent/Documents/Polytech/MA2/thesis/examples/argos/{filename}") as f:
             self.swarm_pos.extend(ast.literal_eval(line) for line in f)
-        # print(f"swarm pos: {self.swarm_pos}")
+
         self.swarm_pos = [list(t) for t in self.swarm_pos]
         os.remove(f"/home/laurent/Documents/Polytech/MA2/thesis/examples/argos/{filename}")
 
-    def run_simulation(self):
+    def run_simulation(self)-> tuple:
+        """
+        Run an argos simulation and compute the behaviour and fitness
+
+        Args:
+            -None
+        Returns:
+            -tuple(float): the value of the behaviour and fitness
+        """
         command = f"/home/laurent/AutoMoDe/bin/automode_main -c {self.argos_file} -n {self.pfsm}"
         subprocess.run(f"cd /home/laurent/Documents/Polytech/MA2/thesis/examples/argos; {command}",shell = True)
         
@@ -53,16 +70,41 @@ class Simulation():
         print("Fitness : ", fitness)
         return features,fitness
 
-    def compute_features(self):
+    def compute_features(self)-> float:
+        """
+        Compute the features of a run 
+
+        Args:
+            -None
+        Returns:
+            -float: the value of the behaviour
+        """
         return self.compute_phi()
 
-    def compute_fitness(self):
+    def compute_fitness(self)-> int:
+        """
+        Compute the fitness of a run = the number of epuck inside the white circle
+
+        Args:
+            -None
+        Returns:
+            -int: the value of the fitness
+        """
         return sum(
             self.distToCircle(self.circle_goal, pos) < self.circle_goal[2]
             for pos in self.swarm_pos
         )
 
-    def compute_phi(self):
+    def compute_phi(self)-> float:
+        """
+        Compute the phi behaviour.
+        It's the distance of each robot from the landmarks
+
+        Args:
+            -None
+        Returns:
+            -float: the value of the behaviour
+        """
         phi_tot = []
         for p in self.patches:
             phi = []
@@ -99,7 +141,15 @@ class Simulation():
 
         return sum(phi_tot) / len(phi_tot)
 
-    def retrieve_patches(self):
+    def retrieve_patches(self)->tuple:
+        """
+        Retrieve the different values of the landmarks inside the argos file
+
+        Args:
+            -None
+        Returns:
+            -tuple: the circles or rectangles and the obstacles
+        """
         patches = []
 
         # parse an xml file by name
@@ -133,7 +183,16 @@ class Simulation():
 
         return patches, obstacles   
     
-    def distToCircle(self, circle, pos):
+    def distToCircle(self, circle : tuple, pos : tuple)-> float:
+        """
+        Compute the distance of a point to a circle
+
+        Args:
+            -circle (tuple): (x,y,radius)
+            -pos (tuple): (x,y) = the position of the point
+        Returns:
+            -float: the distance
+        """
         c_x = circle[0]
         c_y = circle[1]
         r = circle[2]
@@ -142,7 +201,16 @@ class Simulation():
                 return self.arenaD
         return max(0, sqrt((pos[0]-c_x)**2 + (pos[1] - c_y)**2) - r)
 
-    def distToRect(self, rect, pos):
+    def distToRect(self, rect : tuple, pos : tuple)-> float:
+        """
+        Compute the distance of a point to a rectangle
+
+        Args:
+            -rect (tuple): (x,y,width,length)
+            -pos (tuple): (x,y) = the position of the point
+        Returns:
+            -float: the distance
+        """
         x_min = rect[0] - rect[2]/2
         x_max = rect[0] + rect[2]/2
         y_min = rect[1] - rect[3]/2
@@ -159,9 +227,22 @@ class Simulation():
                return self.arenaD
         return sqrt(dx**2 + dy**2)
 
-    def ccw(self, a, b, c):
+    def ccw(self, a : float, b : float, c : float) -> bool:
+        """
+        Conter-clockwise function
+        """
         return (c[0] - a[0])*(b[1] - a[1]) > (b[0] - a[0])*(c[1] - a[1])
 
-    def intersect(self, a, b, c, d):
-    # Return true if segments AB and CD intersect
+    def intersect(self, a : float, b : float, c : float, d : float)-> bool:
+        """
+        Return true if segments AB and CD intersect
+
+        Args:
+            -a (float): the x of the first position
+            -b (float): the y of the first position
+            -c (float): the x of the second position
+            -d (float): the y of the second position
+        Returns:
+            -bool: intersect or not
+        """
         return (self.ccw(a,c,d) != self.ccw(b,c,d)) and (self.ccw(a,b,c) != self.ccw(a,b,d))
