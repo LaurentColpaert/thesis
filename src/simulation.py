@@ -1,3 +1,6 @@
+"""
+Laurent Colpaert - Thesis 2022-2023
+"""
 import ast
 from math import cos, exp, sin, sqrt
 import os
@@ -11,6 +14,9 @@ import numpy as np
 
 
 class Simulation():
+    """
+    Class Simulation : contain the function necessary to launch an argos simulation based on AutoMoDe
+    """
     def __init__(self, argos_file: str = "aac.argos") -> None:
         self.swarm_pos = []
         self.argos_file = argos_file
