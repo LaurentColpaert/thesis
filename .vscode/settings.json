@@ -2,5 +2,15 @@
     "files.associations": {
         "cstdlib": "cpp"
     },
-    "python.formatting.provider": "black"
+    "python.formatting.provider": "black",
+    "jupyter.kernels.filter": [
+        {
+            "path": "/bin/python2",
+            "type": "pythonEnvironment"
+        },
+        {
+            "path": "/usr/bin/python2",
+            "type": "pythonEnvironment"
+        }
+    ]
 }

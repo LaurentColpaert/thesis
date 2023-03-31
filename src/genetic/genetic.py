@@ -174,6 +174,7 @@ class Genetic():
         curT = -1
         last_id = 100
         phenos = phenotype.split('--')[1:]
+        print(phenos)
         for key in self.chain:
             elem = self.ranges[key]
             if(type(elem) == type(())):

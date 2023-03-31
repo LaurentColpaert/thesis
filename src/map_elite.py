@@ -7,16 +7,17 @@ import math
 from species import Species
 
 class MAP_Elite:
-    def __init__(self,b_range,height: int = 20, width: int = 20,  num_iterations: int = 50 , batch_size: int = 500) -> None:
+    def __init__(self,b_range,height: int = 20, width: int = 20,  num_iterations: int = 5000 , pop_size: int = 10) -> None:
         self.archive = {}
         self.height = height
         self.width = width
         self.num_iterations = num_iterations
-        self.batch_size = batch_size
+        self.pop_size = pop_size
         self.b_range = b_range
 
         #To plot the progress
         self.coverages = []
+        self.pop = []
         self.means = []
 
         #Functions
@@ -30,6 +31,10 @@ class MAP_Elite:
             f, b = self.fitness_fn(g)
             self.add_to_archive(Species(g, b, f))
     
+    def add_archive(self, pheno):
+        b,f = self.fitness_fn(pheno)
+        self.add_to_archive(Species(pheno,b,f))
+
     def fitness(self, genotype):
         """
         Compute the fitness function and it's behaviour based on the genotype.
@@ -43,20 +48,20 @@ class MAP_Elite:
         pass
 
     def map_elite(self):
-        for i in tqdm(range(self.num_iterations)):
-            # if i % 100 == 0:
-                # print(f"Step {i}")
+        self.pop = [random.choice(list(self.archive.values())).genotype for _ in range(self.pop_size)]
+        for _ in tqdm(range(self.num_iterations)):
             # self.display_archive()
-            for _ in range(self.batch_size):
-                # Pick an existing random point in the archive
-                x = random.choice(list(self.archive.values()))
-                # Mutate it
-                g = self.mutate_fn(x.genotype)
-                # print("g is ", g)
-                # Compute the fitness and behaviour
-                f,b = self.fitness_fn(g)
 
-                self.add_to_archive(Species(g,b,f))
+            #Compute the fitness function for each individual of the population
+            for ind in range(self.pop_size):
+                # Compute the fitness and behaviour
+                f,b = self.fitness_fn(self.pop[ind].genotype)
+                self.add_to_archive(Species(self.pop[ind].genotype,b,f))
+
+            #Refill the population randomly and mutate the individual
+            self.pop = [random.choice(list(self.archive.values())).genotype for _ in range(self.pop_size)]
+            self.mutate_fn(self.pop)
+
             coverage, mean = self.qd_scores()
             self.coverages += [coverage]
             self.means += [mean]
@@ -66,14 +71,15 @@ class MAP_Elite:
         """
         Map the species behaviour into the archive,
         and store it only if it does not exist or its fitness value is higher than the previous species of the cell.
-        """        
+        """ 
+        print(species.behavior)       
 
-        if species.behavior[0] != self.b_range[0][1]: 
+        if species.behavior[0] < self.b_range[0][1]: 
             x = math.floor((abs(self.b_range[0][0]) + species.behavior[0]) * (self.width -1)/(abs(self.b_range[0][1]) + abs(self.b_range[0][0]) ))
         else:
             x = self.width -1
         
-        if species.behavior[1] != self.b_range[1][1]:
+        if species.behavior[1] < self.b_range[1][1]:
             y = math.floor((abs(self.b_range[1][0]) + species.behavior[1]) *(self.height - 1)/(abs(self.b_range[1][1]) + abs(self.b_range[1][0])) )
         else:
             y = self.height -1
