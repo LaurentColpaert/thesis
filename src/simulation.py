@@ -30,6 +30,7 @@ class Simulation():
         self.arenaD = 3
         self.nRbt = 20
         self.circle_goal = [0,0,0]
+        self.iteration = 1200
         # Patch = [x,y,r]
         self.patches, self.obstacles = self.retrieve_patches()
         
@@ -47,6 +48,7 @@ class Simulation():
             self.swarm_pos.extend(ast.literal_eval(line) for line in f)
 
         self.swarm_pos = [list(t) for t in self.swarm_pos]
+
         os.remove(f"/home/laurent/Documents/Polytech/MA2/thesis/examples/argos/{filename}")
 
     def run_simulation(self)-> tuple:
@@ -79,7 +81,7 @@ class Simulation():
         Returns:
             -float: the value of the behaviour
         """
-        return self.compute_phi()
+        return [self.compute_phi(),self.duty_factor()]
 
     def compute_fitness(self)-> int:
         """
@@ -94,6 +96,21 @@ class Simulation():
             self.distToCircle(self.circle_goal, pos) < self.circle_goal[2]
             for pos in self.swarm_pos
         )
+
+    def duty_factor(self)-> float:
+        """
+        Compute the duty factor.
+        It's the amout of time that all the robot have spent in the final landmark
+
+        Args:
+            -None
+        Returns:
+            -float: the value of the behaviour
+        """
+        return sum(
+            self.distToCircle(self.circle_goal, pos) < self.circle_goal[2]
+            for pos in self.swarm_pos[:-20]
+        )/(self.nRbt * self.iteration)
 
     def compute_phi(self)-> float:
         """
@@ -110,7 +127,7 @@ class Simulation():
             phi = []
             patch = p.copy()
 
-            for pos in self.swarm_pos:
+            for pos in self.swarm_pos[-self.nRbt:]:
                 if(len(patch) == 3):
                     distance = self.distToCircle(patch, pos)
                 else:
@@ -123,11 +140,11 @@ class Simulation():
             phi_tot.extend(iter(phi))
 
         phi = []
-        for i in range(len(self.swarm_pos)):
-            neighbors = self.swarm_pos.copy()
+        for i in range(self.nRbt):
+            neighbors = self.swarm_pos[-self.nRbt:].copy()
             neighbors.pop(i)
             distance = min(
-                LA.norm(np.array(self.swarm_pos[i]) - np.array(n), ord=2)
+                LA.norm(np.array(self.swarm_pos[-20 + i]) - np.array(n), ord=2)
                 for n in neighbors
             )
             phi.append(distance)

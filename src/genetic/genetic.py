@@ -114,7 +114,7 @@ class Genetic():
         g2 = g2[:p1] + s1_crossover + g2[p2:]
         return g1,g2
 
-    def crossover(self,g1 : str,g2 : str,p : int) -> tuple:
+    def crossover(self,g1 : str,g2 : str,p : int= 0.6) -> tuple:
         """
         Run a crossover function if a certain probability is reached
 
@@ -131,7 +131,7 @@ class Genetic():
             g1,g2 = self.twopoint_crossover(g1,g2)
         return g1,g2
 
-    def mutate(self,g : str, p: int)-> str:
+    def mutate(self,g : str, p: int=0.02)-> str:
         """
         Mutate a genotype by changing it's bit randomly by following a probability p
 
@@ -174,7 +174,8 @@ class Genetic():
         curT = -1
         last_id = 100
         phenos = phenotype.split('--')[1:]
-        print(phenos)
+        if phenos[0] == "fsm-config ":
+            phenos.pop(0)
         for key in self.chain:
             elem = self.ranges[key]
             if(type(elem) == type(())):
@@ -300,7 +301,7 @@ class Genetic():
         Returns:
             -str: a pfsm in the form of a phenotype 
         """
-        phenotype = ''
+        phenotype = '--fsm-config '
         i = 0
         nstates = self.MAX_STATES
         ntrans = self.MAX_TRANS

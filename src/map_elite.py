@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import random
 import math
+import json
+from datetime import datetime
 
 from species import Species
 
@@ -55,8 +57,8 @@ class MAP_Elite:
             #Compute the fitness function for each individual of the population
             for ind in range(self.pop_size):
                 # Compute the fitness and behaviour
-                f,b = self.fitness_fn(self.pop[ind].genotype)
-                self.add_to_archive(Species(self.pop[ind].genotype,b,f))
+                b,f = self.fitness_fn(self.pop[ind])
+                self.add_to_archive(Species(self.pop[ind],b,f))
 
             #Refill the population randomly and mutate the individual
             self.pop = [random.choice(list(self.archive.values())).genotype for _ in range(self.pop_size)]
@@ -73,7 +75,7 @@ class MAP_Elite:
         and store it only if it does not exist or its fitness value is higher than the previous species of the cell.
         """ 
         print(species.behavior)       
-
+        
         if species.behavior[0] < self.b_range[0][1]: 
             x = math.floor((abs(self.b_range[0][0]) + species.behavior[0]) * (self.width -1)/(abs(self.b_range[0][1]) + abs(self.b_range[0][0]) ))
         else:
@@ -98,7 +100,7 @@ class MAP_Elite:
         return coverage, mean
     
     def display_progress(self):
-        fig = plt.figure(figsize=(5,3))
+        plt.figure(figsize=(5,3))
         plt.subplot(1, 2, 1)
         plt.plot(self.coverages)
         plt.title("coverage")
@@ -123,6 +125,9 @@ class MAP_Elite:
                 m_max = s.fitness
         plt.imshow(np.array(fit))
         plt.clim(m_min, m_max)
+        
+        # plt.xlim(self.b_range[0][0],self.b_range[0][1])
+        # plt.ylim(self.b_range[1][0],self.b_range[1][1])
         plt.show()
         # fig.canvas.draw()
         return m_min, m_max
@@ -132,3 +137,9 @@ class MAP_Elite:
     
     def set_mutate(self, mutate_fn):
         self.mutate_fn = mutate_fn
+
+    def save_archive(self):
+        # f = open(f'out/archive/{datetime.now().timestamp()}.json', 'w')
+        # with open(f'../out/archive/{datetime.now().timestamp()}.json','w') as file:
+        # json.dump(self.archive,f)
+        pass
