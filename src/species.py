@@ -6,3 +6,6 @@ class Species:
         self.behavior = behavior
         self.fitness = fitness
         self.niche = niche
+
+    def __str__():
+        return f""

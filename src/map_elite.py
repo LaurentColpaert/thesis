@@ -10,10 +10,9 @@ from behaviour import Behaviour
 from species import Species
 
 class MAP_Elite:
-    def __init__(self,behaviour : Behaviour,height: int = 20, width: int = 20,  num_iterations: int = 5000 , pop_size: int = 10) -> None:
+    def __init__(self,behaviour : Behaviour,n_bin: int = 20,  num_iterations: int = 5000 , pop_size: int = 10) -> None:
         self.archive = {}
-        self.height = height
-        self.width = width
+        self.n_bin = n_bin
         self.num_iterations = num_iterations
         self.pop_size = pop_size
         self.behaviour = behaviour
@@ -36,8 +35,20 @@ class MAP_Elite:
     
     def add_archive(self, pheno):
         b,f = self.fitness_fn(pheno,self.behaviour)
-        self.add_to_archive(Species(pheno,b,f))
+        p = self.compute_point_space(b)
+        print(f"the position in the n-space is {p}")
+        # self.add_to_archive(Species(pheno,b,f))
 
+    def compute_point_space(self, behaviours : list) -> list:
+        point = []
+        for i in range(len(behaviours)):
+            if behaviours[i] < b_range[1]: 
+                x = math.floor((abs(b_range[0]) + behaviours[i]) * (self.n_bin -1)/(abs(b_range[1]) + abs(b_range[0]) ))
+            else:
+                x = self.n_bin -1
+            point.append(x)
+        return point
+    
     def fitness(self, genotype):
         """
         Compute the fitness function and it's behaviour based on the genotype.
@@ -76,14 +87,14 @@ class MAP_Elite:
         and store it only if it does not exist or its fitness value is higher than the previous species of the cell.
         """         
         if species.behavior[0] < self.b_range[0][1]: 
-            x = math.floor((abs(self.b_range[0][0]) + species.behavior[0]) * (self.width -1)/(abs(self.b_range[0][1]) + abs(self.b_range[0][0]) ))
+            x = math.floor((abs(self.b_range[0][0]) + species.behavior[0]) * (self.n_bin -1)/(abs(self.b_range[0][1]) + abs(self.b_range[0][0]) ))
         else:
-            x = self.width -1
+            x = self.n_bin -1
         
         if species.behavior[1] < self.b_range[1][1]:
-            y = math.floor((abs(self.b_range[1][0]) + species.behavior[1]) *(self.height - 1)/(abs(self.b_range[1][1]) + abs(self.b_range[1][0])) )
+            y = math.floor((abs(self.b_range[1][0]) + species.behavior[1]) *(self.n_bin - 1)/(abs(self.b_range[1][1]) + abs(self.b_range[1][0])) )
         else:
-            y = self.height -1
+            y = self.n_bin -1
         print(f"The new species is ({x},{y}) with a fitness of {species.fitness}")
         if (x, y) not in self.archive or self.archive[(x, y)].fitness < species.fitness:
             self.archive[(x,y)] = species
@@ -93,9 +104,9 @@ class MAP_Elite:
         """
         Compute the coverage and the mean fitness of the archive
         """
-        coverage = len(self.archive) / float(self.height * self.width)
+        coverage = len(self.archive) / float(self.n_bin * self.n_bin)
         fit_list = [x.fitness for x in list(self.archive.values())]
-        mean = sum(fit_list) / float(self.height * self.width)
+        mean = sum(fit_list) / float(self.n_bin * self.n_bin)
         return coverage, mean
     
     def display_progress(self):
@@ -113,7 +124,7 @@ class MAP_Elite:
         """
         Utility function to display the archive
         """
-        fit = np.zeros((self.height, self.width))
+        fit = np.zeros((self.n_bin, self.n_bin))
         m_min = 1e10
         m_max = 0
         for ((x,y), s) in self.archive.items():
@@ -140,6 +151,6 @@ class MAP_Elite:
 
     def save_archive(self):
         # f = open(f'out/archive/{datetime.now().timestamp()}.json', 'w')
-        # with open(f'../out/archive/{datetime.now().timestamp()}.json','w') as file:
-        # json.dump(self.archive,f)
-        pass
+        with open(f'home/laurent/Documents/Polytech/MA2/thesis/out/archive/{str(datetime.now().timestamp()).replace(".","_")}.json','w') as file:
+            json.dump(self.archive,file)
+        

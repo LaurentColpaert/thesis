@@ -70,23 +70,13 @@ class Simulation():
         time.sleep(3)
 
         self.read_file()
-        features = self.compute_features()
+        features = self.behaviour.compute_features(self.swarm_pos)
         print("Features : ", features)
+        print("Features len: ", len(features))
         fitness = self.compute_fitness()
         print("Fitness : ", fitness)
         return features,fitness
 
-    def compute_features(self)-> float:
-        """
-        Compute the features of a run 
-
-        Args:
-            -None
-        Returns:
-            -float: the value of the behaviour
-        """
-        f1,f2 = self.behaviour.retrieve_behaviour_fct()
-        return [f1(self.swarm_pos),f2(self.swarm_pos)]
 
     def compute_fitness(self)-> int:
         """

@@ -9,8 +9,11 @@ from numpy import linalg as LA
 from utility import distToCircle, distToRect
 
 class behaviours(Enum):
-    PHI = 1
-    DUTY_FACTOR = 2
+    """
+    The value corresponding is the position in the behaviour vector
+    """
+    PHI = 40
+    DUTY_FACTOR = 41
 
 class Behaviour:
     def __init__(self, b1 : behaviours, b2 : behaviours) -> None:
@@ -34,6 +37,25 @@ class Behaviour:
         """
         return self.get_behaviours(self.b1),self.get_behaviours(self.b2)
 
+    def compute_features(self,swarm_pos : list) -> list:
+        features = []
+        phi= self.compute_phi(swarm_pos=swarm_pos)
+        features.extend(iter(phi))
+        df = self.duty_factor(swarm_pos=swarm_pos)
+        features.append(df)
+        return features
+
+    def get_range_position(self, position : int) -> list:
+        """
+        In function of the position in the behaviour vector return the range corresponding
+        """  
+        if position +1<= behaviours.PHI.value:
+            return self.range1
+        elif position +1== behaviours.DUTY_FACTOR.value:
+            return self.range2
+
+
+
     def get_behaviours(self, behaviour : behaviours) -> list:
         """
         Retrieve a behaviour function based on the input behaviour
@@ -47,9 +69,9 @@ class Behaviour:
         """
         Return the corresponding range depending on the behaviour chosen
         """
-        if b.value == 1: #DUTY_FACTOR
+        if b.value == behaviours.DUTY_FACTOR.value: #DUTY_FACTOR
             return [0,1]
-        elif b.value == 2: #PHI
+        elif b.value == behaviours.PHI.value: #PHI
             return [0,1]
         
     def duty_factor(self,swarm_pos : list)-> float:
@@ -94,6 +116,7 @@ class Behaviour:
             phi.sort(reverse=True)
             phi_tot.extend(iter(phi))
 
+        #Distance from the closest robot 
         phi = []
         for i in range(self.nRbt):
             neighbors = swarm_pos[-self.nRbt:].copy()
@@ -109,7 +132,8 @@ class Behaviour:
         phi.sort(reverse=True)
 
         phi_tot.extend(iter(phi))
-        return sum(phi_tot) / len(phi_tot)
+        # return sum(phi_tot) / len(phi_tot)
+        return phi_tot[:40]
     
     def set_behaviour1(self, b1 : behaviours) -> None:
         self.b1 = b1
