@@ -42,6 +42,7 @@ class MAP_Elite:
     def compute_point_space(self, behaviours : list) -> list:
         point = []
         for i in range(len(behaviours)):
+            b_range = self.behaviour.get_range_position(i)
             if behaviours[i] < b_range[1]: 
                 x = math.floor((abs(b_range[0]) + behaviours[i]) * (self.n_bin -1)/(abs(b_range[1]) + abs(b_range[0]) ))
             else:
