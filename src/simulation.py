@@ -4,6 +4,7 @@ Laurent Colpaert - Thesis 2022-2023
 import ast
 from math import cos, exp, sin, sqrt
 import os
+import re
 import subprocess
 import time
 from xml.dom import minidom
@@ -75,6 +76,33 @@ class Simulation():
         print("Features len: ", len(features))
         fitness = self.compute_fitness()
         print("Fitness : ", fitness)
+        return features,fitness
+    
+    def run_simulation_std_out(self) -> tuple:
+        """
+        Run an argos simulation and compute the behaviour and fitness
+
+        Args:
+            -None
+        Returns:
+            -tuple(float): the value of the behaviour and fitness
+        """
+        command = f"cd /home/laurent/Documents/Polytech/MA2/thesis/examples/argos; /home/laurent/AutoMoDe/bin/automode_main -c {self.argos_file} -n {self.pfsm}"
+        process = subprocess.Popen(f"{command}",stdout=subprocess.PIPE, shell = True)
+        result = process.stdout.read().decode().strip()
+        pattern = re.compile(r"[-+]?\d+(?:\.\d+)?(?:[eE][-]?\d+)?,\s*[-+]?\d+(?:\.\d+)?(?:[eE][-]?\d+)?\n")
+        test = pattern.findall(result)
+
+        self.swarm_pos = []
+        self.swarm_pos.extend(
+            (float(elem.split(',')[0]), float(elem.split(',')[1].split('\n')[0]))
+            for elem in test
+        )
+        time.sleep(3)
+        features = self.behaviour.compute_features(self.swarm_pos)
+        # print("Features : ", features)
+        fitness = self.compute_fitness()
+        # print("Fitness : ", fitness)
         return features,fitness
 
 

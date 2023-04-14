@@ -1,3 +1,5 @@
+from functools import partial
+import multiprocessing
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -101,6 +103,31 @@ class MAP_Elite:
             self.coverages += [coverage]
             self.means += [mean]
 
+    def map_elite_parallel(self):
+        self.pop = self.select_population()
+        for _ in tqdm(range(self.num_iterations)):
+            # self.display_archive()
+
+            #Compute the fitness function for each individual of the population
+            fitness_fn_with_behaviour = partial(self.fitness_fn,behaviour = self.behaviour)
+            with multiprocessing.Pool() as pool:
+                results = pool.map(self.fitness_fn, self.pop) 
+            
+            print("The result is : ", results)
+            for i in range(len(results)):
+                # Compute the fitness and behaviour
+                b = results[i][0]
+                f = results[i][2]
+                p = self.compute_point_space(b)
+                self.add_archive_db(Species(self.pop[i],b,f,p))
+
+            #Refill the population randomly and mutate the individual
+            self.pop = self.select_population()
+            self.mutate_fn(self.pop)
+
+            coverage, mean = self.qd_scores()
+            self.coverages += [coverage]
+            self.means += [mean]
 
     def add_to_archive(self, species: Species):
         """
