@@ -1,17 +1,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 from tqdm import tqdm
 import random
 import math
 import json
 from datetime import datetime
-from behaviour import Behaviour
+from behaviour import Behaviour,SIZE, behaviours
 
 from species import Species
 
 class MAP_Elite:
     def __init__(self,behaviour : Behaviour,n_bin: int = 20,  num_iterations: int = 5000 , pop_size: int = 10) -> None:
         self.archive = {}
+        col_names = list(range(1, 42))
+        col_names.append('geno')
+        col_names.append('behaviour')
+        col_names.append('fitness')
+        self.archive_db = pd.DataFrame(columns=col_names)
         self.n_bin = n_bin
         self.num_iterations = num_iterations
         self.pop_size = pop_size
@@ -36,15 +42,23 @@ class MAP_Elite:
     def add_archive(self, pheno):
         b,f = self.fitness_fn(pheno,self.behaviour)
         p = self.compute_point_space(b)
-        print(f"the position in the n-space is {p}")
         # self.add_to_archive(Species(pheno,b,f))
+        self.add_archive_db(Species(pheno,b,f,p))
+
+    def add_archive_db(self,species : Species) -> None:
+        to_add = species.niche
+        to_add.append(species.genotype)
+        to_add.append(species.behavior)
+        to_add.append(species.fitness)
+
+        self.archive_db.loc[len(self.archive_db)] = to_add
 
     def compute_point_space(self, behaviours : list) -> list:
         point = []
         for i in range(len(behaviours)):
             b_range = self.behaviour.get_range_position(i)
             if behaviours[i] < b_range[1]: 
-                x = math.floor((abs(b_range[0]) + behaviours[i]) * (self.n_bin -1)/(abs(b_range[1]) + abs(b_range[0]) ))
+                x = math.floor((abs(b_range[0]) + behaviours[i]) * (self.n_bin -1)/(abs(b_range[1]) + abs(b_range[0])))
             else:
                 x = self.n_bin -1
             point.append(x)
@@ -62,8 +76,13 @@ class MAP_Elite:
     def mutate(self,x):
         pass
 
+    def select_population(self) -> list:
+        rdm = self.archive_db["geno"].sample(self.pop_size)
+        return rdm.values
+    
     def map_elite(self):
-        self.pop = [random.choice(list(self.archive.values())).genotype for _ in range(self.pop_size)]
+
+        self.pop = self.select_population()
         for _ in tqdm(range(self.num_iterations)):
             # self.display_archive()
 
@@ -71,10 +90,11 @@ class MAP_Elite:
             for ind in range(self.pop_size):
                 # Compute the fitness and behaviour
                 b,f = self.fitness_fn(self.pop[ind],self.behaviour)
-                self.add_to_archive(Species(self.pop[ind],b,f))
+                p = self.compute_point_space(b)
+                self.add_archive_db(Species(self.pop[ind],b,f,p))
 
             #Refill the population randomly and mutate the individual
-            self.pop = [random.choice(list(self.archive.values())).genotype for _ in range(self.pop_size)]
+            self.pop = self.select_population()
             self.mutate_fn(self.pop)
 
             coverage, mean = self.qd_scores()
@@ -121,29 +141,46 @@ class MAP_Elite:
         plt.title("mean fitness")
         plt.show()
 
-    def display_archive(self):
+    def fill_archive(self, b : Behaviour) -> dict:
+        archive = {}
+        fit = np.zeros((self.n_bin,self.n_bin))
+        index1 = b.r1 if b.b1 == behaviours.PHI else behaviours.DUTY_FACTOR.value
+        index2 = b.r2 if b.b2 == behaviours.PHI else behaviours.DUTY_FACTOR.value
+        result = self.archive_db[[index1,index2,"geno","behaviour","fitness"]]
+        for index, row in result.iterrows():
+            species = Species(row["geno"],row["behaviour"],row["fitness"])
+            x = row[index1]
+            y = row[index2]
+            if (x, y) not in self.archive or self.archive[(x, y)].fitness < species.fitness:
+                archive[(x,y)] = species
+        return archive
+    
+    def display_archive(self, b : Behaviour) -> None:
         """
         Utility function to display the archive
         """
+        b_range = [b.range1, b.range2]
         fit = np.zeros((self.n_bin, self.n_bin))
         m_min = 1e10
         m_max = 0
-        for ((x,y), s) in self.archive.items():
+        archive = self.fill_archive(b)
+        for ((x,y), s) in archive.items():
             fit[x,y] = s.fitness
             if s.fitness < m_min:
                 m_min = s.fitness
             if s.fitness > m_max:
                 m_max = s.fitness
 
-        plt.imshow(fit,cmap="viridis", vmin=0, vmax=20, extent=[self.b_range[0][0],self.b_range[0][1],self.b_range[1][1],self.b_range[1][0]])
+        plt.imshow(fit,cmap="viridis", vmin=0, vmax=20, extent=[b_range[0][0],b_range[0][1],b_range[1][1],b_range[1][0]])
         plt.colorbar()
-        plt.xlabel(f"{self.behaviour.b1.name}")
-        plt.ylabel(f"{self.behaviour.b2.name}")
-        plt.title(f"Map-Elites with {self.num_iterations} iterations with features : {self.behaviour.b1.name} and {self.behaviour.b2.name}")
+        name_x = f"{b.b1.name} - {b.r1}" if b.b1 == behaviours.PHI else behaviours.DUTY_FACTOR.name
+        name_y = f"{b.b2.name} - {b.r2}" if b.b2 == behaviours.PHI else behaviours.DUTY_FACTOR.name
+        plt.xlabel(name_x)
+        plt.ylabel(name_y)
+        plt.title(f"Map-Elites with {self.num_iterations} iterations with features : {name_x} and {name_y}")
         plt.show()
         # fig.canvas.draw()
-        return m_min, m_max
-    
+
     def set_fitness(self,fitness_fn):
         self.fitness_fn = fitness_fn
     

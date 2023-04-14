@@ -184,8 +184,8 @@ class Genetic():
             else:
                 arange = elem[last_id]
                 datasize = self.bit_size(self.max_range(elem))
-
-            if (arange[1]-arange[0]>0):
+            
+            if (len(arange) > 2 or arange[1]-arange[0]>0):
                 if(key == '--nB'):
                     arange = (arange[0],nstates-1)
                 elif(key == '--nBxT'):
@@ -194,6 +194,9 @@ class Genetic():
                 #Retrieve the value and transform it into a binary value
                 if len(phenos) == 0:
                     geno+='0'*datasize
+                    if key == "--sB":
+                        size = self.bit_size(self.rwm) + 2 * self.bit_size(self.att_rep)
+                        geno += '0' * size
                     continue
                 value = phenos[0].split()[1]
                 key_val = phenos[0].split()[0]
@@ -204,6 +207,7 @@ class Genetic():
                     print("--key : ", key)
                     print("--pheno : ", phenos[0])
                     print("--range : ", arange)
+                    print("--datasize : ", datasize)
                     # print("--bit : ", bit)
                 if (type(arange[0])==type(1.0)):
                     bit_val = int(round((float(value) - arange[0]) / 0.01, 2)) % (max_value+1)
@@ -282,6 +286,7 @@ class Genetic():
                             geno += '0' * size
             else:
                 geno +=  ''.join('0' for _ in range(datasize))
+
             i+=datasize
         return geno
 

@@ -8,6 +8,8 @@ from numpy import linalg as LA
 
 from utility import distToCircle, distToRect
 
+SIZE = 41
+
 class behaviours(Enum):
     """
     The value corresponding is the position in the behaviour vector
@@ -16,11 +18,13 @@ class behaviours(Enum):
     DUTY_FACTOR = 41
 
 class Behaviour:
-    def __init__(self, b1 : behaviours, b2 : behaviours) -> None:
+    def __init__(self, b1 : behaviours, b2 : behaviours,r1 : int = 1, r2 : int = 2) -> None:
         self.b1 = b1
         self.range1 = self.set_range(self.b1)
         self.b2 = b2
         self.range2 = self.set_range(self.b1)
+        self.r1 = r1
+        self.r2 = r2
 
     def setup(self,circle_goal, nRbt, iteration,arenaD : float, patches : list,obstacles : list) -> None:
         self.circle_goal = circle_goal
@@ -53,8 +57,6 @@ class Behaviour:
             return self.range1
         elif position +1== behaviours.DUTY_FACTOR.value:
             return self.range2
-
-
 
     def get_behaviours(self, behaviour : behaviours) -> list:
         """
