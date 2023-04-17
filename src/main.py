@@ -65,15 +65,15 @@ if __name__ == '__main__':
 
 
     start_time = process_time()
-    m_e = MAP_Elite(behaviour = behaviour,num_iterations=10,pop_size=10,n_bin=40)
+    m_e = MAP_Elite(behaviour = behaviour,num_iterations=100,pop_size=20,n_bin=40)
     
     m_e.set_fitness(fitness)
     m_e.set_mutate(mutate)
-    fill_archive(m_e,10)
-
-    m_e.map_elite()
+    fill_archive(m_e,20)
+    
+    m_e.map_elite_parallel()
     # print(m_e.archive_db.head())
-
+    m_e.save_archive()  
     print(f"Time taken is {process_time()- start_time}")
     m_e.display_archive(Behaviour(behaviours.PHI,behaviours.PHI,10,11))
     # m_e.display_progress()

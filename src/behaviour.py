@@ -14,8 +14,8 @@ class behaviours(Enum):
     """
     The value corresponding is the position in the behaviour vector
     """
-    PHI = 40
-    DUTY_FACTOR = 41
+    PHI = 60
+    DUTY_FACTOR = 61
 
 class Behaviour:
     def __init__(self, b1 : behaviours, b2 : behaviours,r1 : int = 1, r2 : int = 2) -> None:
@@ -135,7 +135,7 @@ class Behaviour:
 
         phi_tot.extend(iter(phi))
         # return sum(phi_tot) / len(phi_tot)
-        return phi_tot[:40]
+        return phi_tot
     
     def set_behaviour1(self, b1 : behaviours) -> None:
         self.b1 = b1

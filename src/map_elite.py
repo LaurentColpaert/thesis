@@ -15,7 +15,7 @@ from species import Species
 class MAP_Elite:
     def __init__(self,behaviour : Behaviour,n_bin: int = 20,  num_iterations: int = 5000 , pop_size: int = 10) -> None:
         self.archive = {}
-        col_names = list(range(1, 42))
+        col_names = list(range(1, 62))
         col_names.append('geno')
         col_names.append('behaviour')
         col_names.append('fitness')
@@ -45,15 +45,21 @@ class MAP_Elite:
         b,f = self.fitness_fn(pheno,self.behaviour)
         p = self.compute_point_space(b)
         # self.add_to_archive(Species(pheno,b,f))
-        self.add_archive_db(Species(pheno,b,f,p))
+        self.add_archive_db(Species(pheno,b,f,niche = p))
 
     def add_archive_db(self,species : Species) -> None:
-        to_add = species.niche
+        to_add = species.niche.copy()
         to_add.append(species.genotype)
         to_add.append(species.behavior)
         to_add.append(species.fitness)
-
-        self.archive_db.loc[len(self.archive_db)] = to_add
+        print(species.niche)
+        matching_rows = self.archive_db[(self.archive_db.iloc[:, :61] == species.niche).all(axis=1)]
+        if len(matching_rows) !=0: #there is already a row with those value for the fitness
+            index = matching_rows.index[0]
+            if self.archive_db.iloc[index]["fitness"] < species.fitness:
+                self.archive_db.iloc[index] = to_add
+        else:
+            self.archive_db.loc[len(self.archive_db)] = to_add
 
     def compute_point_space(self, behaviours : list) -> list:
         point = []
@@ -111,13 +117,13 @@ class MAP_Elite:
             #Compute the fitness function for each individual of the population
             fitness_fn_with_behaviour = partial(self.fitness_fn,behaviour = self.behaviour)
             with multiprocessing.Pool() as pool:
-                results = pool.map(self.fitness_fn, self.pop) 
+                results = pool.map(fitness_fn_with_behaviour, self.pop) 
             
             print("The result is : ", results)
             for i in range(len(results)):
                 # Compute the fitness and behaviour
                 b = results[i][0]
-                f = results[i][2]
+                f = results[i][1]
                 p = self.compute_point_space(b)
                 self.add_archive_db(Species(self.pop[i],b,f,p))
 
@@ -216,6 +222,5 @@ class MAP_Elite:
 
     def save_archive(self):
         # f = open(f'out/archive/{datetime.now().timestamp()}.json', 'w')
-        with open(f'home/laurent/Documents/Polytech/MA2/thesis/out/archive/{str(datetime.now().timestamp()).replace(".","_")}.json','w') as file:
-            json.dump(self.archive,file)
+        self.archive_db.to_csv('dataframe.csv',index = False)
         

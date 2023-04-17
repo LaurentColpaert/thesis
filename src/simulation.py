@@ -101,6 +101,7 @@ class Simulation():
         time.sleep(3)
         features = self.behaviour.compute_features(self.swarm_pos)
         # print("Features : ", features)
+        # print("Features len: ", len(features))
         fitness = self.compute_fitness()
         # print("Fitness : ", fitness)
         return features,fitness
