@@ -16,13 +16,15 @@ class behaviours(Enum):
     """
     PHI = 60
     DUTY_FACTOR = 61
+    AAC = 1
+    HOMING = 2
 
 class Behaviour:
     def __init__(self, b1 : behaviours, b2 : behaviours,r1 : int = 1, r2 : int = 2) -> None:
         self.b1 = b1
         self.range1 = self.set_range(self.b1)
         self.b2 = b2
-        self.range2 = self.set_range(self.b1)
+        self.range2 = self.set_range(self.b2)
         self.r1 = r1
         self.r2 = r2
 
@@ -50,9 +52,17 @@ class Behaviour:
         return features
 
     def get_range_position(self, position : int) -> list:
+        from simulation import Mission
         """
         In function of the position in the behaviour vector return the range corresponding
         """  
+        mission = Mission.SHELTER #TODO: change this line -> ugly :3
+        if mission == Mission.SHELTER:
+            if position +1<= 100:
+                return self.range1
+            else:
+                return self.range2
+            
         if position +1<= behaviours.PHI.value:
             return self.range1
         elif position +1== behaviours.DUTY_FACTOR.value:
@@ -75,6 +85,11 @@ class Behaviour:
             return [0,1]
         elif b.value == behaviours.PHI.value: #PHI
             return [0,1]
+        elif b.value == behaviours.AAC.value:
+            return [0,1]
+        elif b.value == behaviours.HOMING.value: #PHI
+            return [0,1]
+        
         
     def duty_factor(self,swarm_pos : list)-> float:
         """

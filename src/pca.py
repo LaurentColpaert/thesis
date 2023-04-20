@@ -6,7 +6,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 pca = PCA(n_components=2)
 
-db = pd.read_csv("save-100iter-no_dup.csv")
+db = pd.read_csv("save-100iter-no_dup_acc.csv")
 
 result = pca.fit_transform(db.iloc[:,:-3])
 
@@ -78,7 +78,7 @@ plt.legend(*sc.legend_elements(), bbox_to_anchor=(1.05, 1), loc=2)
 # plt.savefig("scatter_hue", bbox_inches='tight') 
 plt.show()
 
-db = pd.read_csv("save-300iter_possible-dup.csv")
+db = pd.read_csv("save-300iter_possible-dup_acc.csv")
 
 result = pca.fit_transform(db.iloc[:,:-3])
 
@@ -87,6 +87,6 @@ result_df = pd.DataFrame(data = result
 
 # result_df['w'] = db['fitness']
 
-fig = plt.figure(figsize=(16,10))
-sns.pairplot(result_df)
-plt.show()
+# fig = plt.figure(figsize=(16,10))
+# sns.pairplot(result_df)
+# plt.show()

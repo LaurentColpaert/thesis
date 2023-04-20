@@ -6,7 +6,9 @@ from math import cos, sin, sqrt
 from xml.dom import minidom
 
 
-def retrieve_patches(argos_file : str)->tuple:
+
+def retrieve_patches(argos_file : str, mission) -> tuple:
+    from simulation import Mission
     """
     Retrieve the different values of the landmarks inside the argos file
 
@@ -16,25 +18,23 @@ def retrieve_patches(argos_file : str)->tuple:
         -tuple: the circles or rectangles and the obstacles
     """
     patches = []
-    circle_goal = []
-    
+    goal = []
+
     # parse an xml file by name
     file = minidom.parse(f'/home/laurent/Documents/Polytech/MA2/thesis/examples/argos/{argos_file}')
 
     #retriving circle patches
     circles = file.getElementsByTagName('circle')
     for c in circles:
-        if c.getAttribute("color") != "white":
-            circle_goal = ast.literal_eval("[" + c.getAttribute("position") + "," + c.getAttribute("radius") + "]")
+        if (mission == Mission.AAC or mission == Mission.HOMING) and c.getAttribute("color") != "white":
+            goal = ast.literal_eval("[" + c.getAttribute("position") + "," + c.getAttribute("radius") + "]")
         patches.append(ast.literal_eval("[" + c.getAttribute("position") + "," + c.getAttribute("radius") + "]"))
     #retriving rect patches
     rectangles = file.getElementsByTagName('rectangle')
     for r in rectangles:
-        if(r.getAttribute("color") == "white"):
-            patches.append(ast.literal_eval("[" + r.getAttribute("center") + "," + r.getAttribute("width") + "," + r.getAttribute("height") + "]"))
-        else:
-            patches.append(ast.literal_eval("[" + r.getAttribute("center") + "," + r.getAttribute("width") + "," + r.getAttribute("height") + "]"))
-
+        if (r.getAttribute("color") == "white") and mission == mission.SHELTER:
+            goal = ast.literal_eval("[" + r.getAttribute("center") + "," + r.getAttribute("width") + "," + r.getAttribute("height") + "]")
+        patches.append(ast.literal_eval("[" + r.getAttribute("center") + "," + r.getAttribute("width") + "," + r.getAttribute("height") + "]"))
     obstacles = []
     boxes = file.getElementsByTagName('box')
     for b in  boxes:
@@ -47,7 +47,7 @@ def retrieve_patches(argos_file : str)->tuple:
             b = [center[0] - width*sin(orientation), center[1] - width*cos(orientation)]
             obstacles.append([a,b])
 
-    return patches, obstacles, circle_goal
+    return patches, obstacles, goal
 
 def distToCircle(circle : tuple, pos : tuple, obstacles : list, arenaD : float)-> float:
     """

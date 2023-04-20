@@ -15,11 +15,12 @@ from species import Species
 class MAP_Elite:
     def __init__(self,behaviour : Behaviour,n_bin: int = 20,  num_iterations: int = 5000 , pop_size: int = 10) -> None:
         self.archive = {}
-        col_names = list(range(1, 62))
+        col_names = list(range(1, 3))
         col_names.append('geno')
         col_names.append('behaviour')
         col_names.append('fitness')
         self.archive_db = pd.DataFrame(columns=col_names)
+        self.fitness_db = pd.DataFrame(columns=['geno','behaviour','fitness'])
         self.n_bin = n_bin
         self.num_iterations = num_iterations
         self.pop_size = pop_size
@@ -52,14 +53,14 @@ class MAP_Elite:
         to_add.append(species.genotype)
         to_add.append(species.behavior)
         to_add.append(species.fitness)
-        print(species.niche)
-        matching_rows = self.archive_db[(self.archive_db.iloc[:, :61] == species.niche).all(axis=1)]
-        if len(matching_rows) !=0: #there is already a row with those value for the fitness
-            index = matching_rows.index[0]
-            if self.archive_db.iloc[index]["fitness"] < species.fitness:
-                self.archive_db.iloc[index] = to_add
-        else:
-            self.archive_db.loc[len(self.archive_db)] = to_add
+        # matching_rows = self.archive_db[(self.archive_db.iloc[:, :2] == species.niche).all(axis=1)]
+        # if len(matching_rows) !=0: #there is already a row with those value for the fitness
+        #     index = matching_rows.index[0]
+        #     if self.archive_db.iloc[index]["fitness"] < species.fitness:
+        #         self.archive_db.iloc[index] = to_add
+        # else:
+        #     self.archive_db.loc[len(self.archive_db)] = to_add
+        self.archive_db.loc[len(self.archive_db)] = to_add
 
     def compute_point_space(self, behaviours : list) -> list:
         point = []
@@ -109,6 +110,30 @@ class MAP_Elite:
             self.coverages += [coverage]
             self.means += [mean]
 
+
+    def other_mission(self):
+        df = pd.read_csv('save-100iter-no_dup_acc.csv')
+        pfsms = df["geno"].array
+        print("The len of pfsm is ",len(pfsms))
+
+        #Compute the fitness function for each individual of the population
+        fitness_fn_with_behaviour = partial(self.fitness_fn,behaviour = self.behaviour)
+        with multiprocessing.Pool() as pool:
+            results = pool.map(fitness_fn_with_behaviour, pfsms) 
+        
+        print("The result is : ", results)
+        for i in range(len(results)):
+            # Compute the fitness and behaviour
+            b = results[i][0]
+            f = results[i][1]
+            # p = self.compute_point_space(b)
+            self.add_db_without_feature(Species(pfsms[i],b,f,))
+        self.fitness_db.to_csv('fitness_shelter.csv',index = False)
+    def add_db_without_feature(self, species : Species):
+        to_add = [species.genotype, species.behavior, species.fitness]
+        print(to_add)
+        self.fitness_db.loc[len(self.fitness_db)] = to_add
+
     def map_elite_parallel(self):
         self.pop = self.select_population()
         for _ in tqdm(range(self.num_iterations)):
@@ -119,7 +144,6 @@ class MAP_Elite:
             with multiprocessing.Pool() as pool:
                 results = pool.map(fitness_fn_with_behaviour, self.pop) 
             
-            print("The result is : ", results)
             for i in range(len(results)):
                 # Compute the fitness and behaviour
                 b = results[i][0]
@@ -179,12 +203,17 @@ class MAP_Elite:
         fit = np.zeros((self.n_bin,self.n_bin))
         index1 = b.r1 if b.b1 == behaviours.PHI else behaviours.DUTY_FACTOR.value
         index2 = b.r2 if b.b2 == behaviours.PHI else behaviours.DUTY_FACTOR.value
+        if b.b1 == behaviours.AAC:
+            index1 = 1
+        if b.b2 == behaviours.HOMING:
+            index2=2
         result = self.archive_db[[index1,index2,"geno","behaviour","fitness"]]
         for index, row in result.iterrows():
             species = Species(row["geno"],row["behaviour"],row["fitness"])
             x = row[index1]
             y = row[index2]
-            if (x, y) not in self.archive or self.archive[(x, y)].fitness < species.fitness:
+            print(f"({x};{y})")
+            if (x, y) not in self.archive : #or self.archive[(x, y)].fitness < species.fitness
                 archive[(x,y)] = species
         return archive
     
@@ -193,6 +222,7 @@ class MAP_Elite:
         Utility function to display the archive
         """
         b_range = [b.range1, b.range2]
+        print(b_range)
         fit = np.zeros((self.n_bin, self.n_bin))
         m_min = 1e10
         m_max = 0
@@ -206,13 +236,14 @@ class MAP_Elite:
 
         plt.imshow(fit,cmap="viridis", vmin=0, vmax=20, extent=[b_range[0][0],b_range[0][1],b_range[1][1],b_range[1][0]])
         plt.colorbar()
-        name_x = f"{b.b1.name} - {b.r1}" if b.b1 == behaviours.PHI else behaviours.DUTY_FACTOR.name
-        name_y = f"{b.b2.name} - {b.r2}" if b.b2 == behaviours.PHI else behaviours.DUTY_FACTOR.name
+        name_x = f"{b.b1.name}" 
+        name_y = f"{b.b2.name}"
         plt.xlabel(name_x)
         plt.ylabel(name_y)
         plt.title(f"Map-Elites with {self.num_iterations} iterations with features : {name_x} and {name_y}")
         plt.show()
         # fig.canvas.draw()
+    
 
     def set_fitness(self,fitness_fn):
         self.fitness_fn = fitness_fn
@@ -220,7 +251,7 @@ class MAP_Elite:
     def set_mutate(self, mutate_fn):
         self.mutate_fn = mutate_fn
 
-    def save_archive(self):
+    def save_archive(self, name : str = "dataframe.csv"):
         # f = open(f'out/archive/{datetime.now().timestamp()}.json', 'w')
-        self.archive_db.to_csv('dataframe.csv',index = False)
+        self.archive_db.to_csv(name,index = False)
         
