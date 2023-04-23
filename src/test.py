@@ -71,14 +71,19 @@ import re
 
 # print(df["fitness"].value_counts().sort_index())
 
-dic = {
-    "Name" : ["Laurent","Laurent","Laurent", "Sebastien", "Sebastien", "Sebastien"],
-    "Day" : ["Lundi","Mardi","Mercredi","Lundi","Mardi","Mercredi"],
-    "quantity" : [1,2,3,4,5,6],
-    "price" : [10,10,10,10,10,10]
-}
+# dic = {
+#     "Name" : ["Laurent","Laurent","Laurent", "Sebastien", "Sebastien", "Sebastien"],
+#     "Day" : ["Lundi","Mardi","Mercredi","Lundi","Mardi","Mercredi"],
+#     "quantity" : [1,2,3,4,5,6],
+#     "price" : [10,10,10,10,10,10]
+# }
 
-df = pd.DataFrame(dic)
+# df = pd.DataFrame(dic)
 
-print(df.groupby(['Name',"Day"]).apply(lambda x: x["quantity"] * x["price"]))
+# print(df.groupby(['Name',"Day"]).apply(lambda x: x["quantity"] * x["price"]))
 
+from genetic.genetic import Genetic
+pfsm = "--fsm-config --nstate 2 --s0 4 --att0 5 --n0 1 --n0x0 0 --c0x0 2 -p0x0 0.5 --s1 0 --rwm1 20"
+g = Genetic()
+print(g.toGenotype(pfsm))
+print(len(g.toGenotype(pfsm)))
