@@ -112,10 +112,30 @@ def loading_scores(file_name : str = "save-100iter-no_dup_acc.csv"):
 
     print(loading_score[top10])
 
+def get_best_pfsm(amount, file_name,output="best_pfsm.txt"):
+    db = pd.read_csv(file)
+    db['AAC'] = db['fit'].apply(lambda x: float(x.replace("[","").replace("]","").split(',')[0]))
+    db['COVERAGE'] = db['fit'].apply(lambda x: float(x.replace("[","").replace("]","").split(',')[1]))
+    db['HOMING'] = db['fit'].apply(lambda x: float(x.replace("[","").replace("]","").split(',')[2]))
+    db['SHELTER'] = db['fit'].apply(lambda x: float(x.replace("[","").replace("]","").split(',')[3]))
+    print(db.head())
+
+    best_pfsm = []
+    missions = ["AAC","COVERAGE","HOMING","SHELTER"]
+    with open(output,"w") as f:
+        for mission in missions:
+            f.write(f"{mission}\n")
+            best = db.nlargest(2,mission)
+            pfsms = best.geno.tolist()
+            best_pfsm.append(pfsms)
+            for pfsm in pfsms:
+                f.write(f"{pfsm}\n")
+    # print(best_pfsm)
 
 if __name__ == "__main__":
     file = "/home/laurent/Documents/Polytech/MA2/thesis/ALL_SENSORY_features.csv"
+    get_best_pfsm(2,file)
     # pca_variance(file)
     # loading_scores(file)
     # pca_2d_plot()
-    pca_plot(0,file)
+    # pca_plot(1,file)
