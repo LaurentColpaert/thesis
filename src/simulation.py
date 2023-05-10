@@ -22,6 +22,7 @@ class Mission(enum.Enum):
     FORBID = 2
     HOMING = 3
     SHELTER = 4
+    TRAIN = 5
 
 class Simulation():
     """
@@ -38,6 +39,8 @@ class Simulation():
             self.argos_file = "homingVisu.argos" if visualization else "homing.argos"
         elif mission == Mission.SHELTER:
             self.argos_file = "shelterVisu.argos" if visualization else "shelter.argos"
+        elif mission == Mission.TRAIN:
+            self.argos_file = "repertoireTrainingVisu.argos"
 
         #Besqt PFSM
         self.pfsm = "--fsm-config --nstates 4 --s0 4 --att0 3.25 --n0 2 --n0x0 0 --c0x0 5 --p0x0 0.23 --n0x1 2 --c0x1 0 --p0x1 0.70 --s1 2 --n1 3 --n1x0 0 --c1x0 4 --w1x0 8.91 --p1x0 7 --n1x1 1 --c1x1 0 --p1x1 0.15 --n1x2 2 --c1x2 3 --w1x2 1.68 --p1x2 10 --s2 1 --n2 1 --n2x0 0 --c2x0 3 --w2x0 6.93 --p2x0 4 --s3 4 --att3 3.71 --n3 2 --n3x0 0 --c3x0 1 --p3x0 0.50 --n3x1 2 --c3x1 5 --p3x1 0.62"
@@ -75,15 +78,28 @@ class Simulation():
         Returns:
             -tuple(float): the value of the behaviour and fitness
         """
-        command = f"/home/laurent/AutoMoDe/bin/automode_main -c {self.argos_file} -n {self.pfsm}"
-        subprocess.run(f"cd /home/laurent/Documents/Polytech/MA2/thesis/examples/argos; {command}",shell = True)
-        
+        command = f"cd /home/laurent/Documents/Polytech/MA2/thesis/examples/argos; /home/laurent/AutoMoDe/bin/automode_main -c {self.argos_file} -n {self.pfsm}"
+        process = subprocess.Popen(f"{command}",stdout=subprocess.PIPE, shell = True)
+        result = process.stdout.read().decode().strip()
+        pattern = re.compile(r"[-+]?\d+(?:\.\d+)?(?:[eE][-]?\d+)?,\s*[-+]?\d+(?:\.\d+)?(?:[eE][-]?\d+)?\n")
+        test = pattern.findall(result)
+
+        self.swarm_pos = []
+        self.swarm_pos.extend(
+            (float(elem.split(',')[0]), float(elem.split(',')[1].split('\n')[0]))
+            for elem in test
+        )
+
+        pattern = r"Fitness\s.*"
+        match = re.findall(pattern,result)
+        fitness_from_file = match
+        print("Fitness from argos ", fitness_from_file)
         time.sleep(3)
 
-        self.read_file()
-        features = self.behaviour.compute_features(self.swarm_pos)
-        print("Features : ", features)
-        print("Features len: ", len(features))
+        # self.read_file()
+        # features = self.behaviour.compute_features(self.swarm_pos)
+        # print("Features : ", features)
+        features = []
         fitness = self.compute_fitness()
         print("Fitness : ", fitness)
         return features,fitness

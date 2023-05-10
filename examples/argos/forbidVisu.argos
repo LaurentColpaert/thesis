@@ -10,7 +10,7 @@
     <!-- ****************** -->
     <!-- * Loop functions * -->
     <!-- ****************** -->
-    <loop_functions library="/home/laurent/AutoMoDe-loopfunctions/build/loop-functions/orchestra/libtemplate.so" label="template">
+    <loop_functions library="/home/laurent/AutoMoDe-loopfunctions/build/loop-functions/chocolate/CFA/libchocolate_cfa_loopfunc.so" label="chocolate_cfa_loop_functions">
         <params dist_radius="1.2" number_robots="20"/>
         <circle position="0.501,0.493" radius="0.3" color="black"/>
         <circle position="-0.498,0.492" radius="0.3" color="black"/>

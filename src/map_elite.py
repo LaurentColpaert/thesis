@@ -84,10 +84,6 @@ class MAP_Elite:
 
     def mutate(self,x):
         pass
-
-    def select_population(self) -> list:
-        rdm = self.archive_db["geno"].sample(self.pop_size)
-        return rdm.values
     
     def map_elite(self):
 
@@ -134,8 +130,14 @@ class MAP_Elite:
         print(to_add)
         self.fitness_db.loc[len(self.fitness_db)] = to_add
 
+
+    def select_population(self) -> list:
+        rdm = random.sample(self.pop, self.pop_size)
+        # rdm = self.pop.sample(self.pop_size)
+        return rdm.values
+    
     def map_elite_parallel(self):
-        self.pop = self.select_population()
+        self.pop = self.archive_db["geno"].sample(self.pop_size)
         for _ in tqdm(range(self.num_iterations)):
             # self.display_archive()
 
@@ -152,12 +154,12 @@ class MAP_Elite:
                 self.add_archive_db(Species(self.pop[i],b,f,p))
 
             #Refill the population randomly and mutate the individual
-            self.pop = self.select_population()
             self.mutate_fn(self.pop)
+            self.pop = self.select_population()
 
-            coverage, mean = self.qd_scores()
-            self.coverages += [coverage]
-            self.means += [mean]
+            # coverage, mean = self.qd_scores()
+            # self.coverages += [coverage]
+            # self.means += [mean]
 
     def add_to_archive(self, species: Species):
         """

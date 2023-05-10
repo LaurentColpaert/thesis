@@ -31,14 +31,11 @@ def fitness(phenotype, behaviour : Behaviour):
     return [b,f]
 
 def fitness_is_behaviour(phenotype, behaviour : Behaviour):
-    sim = Simulation(behaviour, mission=Mission.AAC)
+    sim = Simulation(behaviour, mission=Mission.TRAIN)
     sim.pfsm = phenotype
     b1,f = sim.run_simulation_std_out_feature()
-    sim = Simulation(behaviour, mission=Mission.HOMING)
-    sim.pfsm = phenotype
-    b2,f = sim.run_simulation_std_out_feature()
-    print(f"The fitness for the run are ({b1,b2})")
-    return [[b1,b2],f]
+    print(f"The fitness for the run are ({b1})")
+    return [b1,f]
 # def fitness(phenotype, behaviour : Behaviour):
 #     sim = Simulation(behaviour)
 #     sim.pfsm = phenotype

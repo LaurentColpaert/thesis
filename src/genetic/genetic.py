@@ -131,7 +131,7 @@ class Genetic():
             g1,g2 = self.twopoint_crossover(g1,g2)
         return g1,g2
 
-    def mutate(self,g : str, p: int=0.02)-> str:
+    def mutate(self,g : str, p: int=0.05)-> str:
         """
         Mutate a genotype by changing it's bit randomly by following a probability p
 
